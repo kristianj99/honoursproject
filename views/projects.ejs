@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Proof of Concept</title>
+    </head>
+</html>
+<body>
+    <form action="selectproject" method=POST>
+        <select name="Projects">
+            <% for (const i in dropdownVals) { %>
+                <option value="<%= dropdownVals[i].id %>"> <%= dropdownVals[i].name %> </option>
+                <% } %>       
+        </select><br>
+        <input type="submit" value="Select project"><br>
+        <input type="button" value="Delete project">
+    </form>
+    <form action="newproject" method=POST>
+        <input type="submit" value="New project"></input>   
+    </form><br><br><br>
+    <a href="/">Return Home</a>
+    <script src="../static/client.js"></script>
+</body>
