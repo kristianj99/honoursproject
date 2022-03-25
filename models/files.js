@@ -1,13 +1,10 @@
 var mongoose=require("mongoose");
 var { Schema } = mongoose;
 var schema = new Schema({
-    name: String,
     userid: String,
-    meta: {
-        access: Array
-    } 
-
+    projectid: String,
+    file: Buffer
 });
 
 
-module.exports=mongoose.model("Project", schema);
+module.exports=mongoose.model("File", schema);

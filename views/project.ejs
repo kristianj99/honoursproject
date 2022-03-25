@@ -2,9 +2,38 @@
 <html>
     <head>
         <title>Proof of Concept</title>
+        <link href="css/style.css" rel="stylesheet" type="text/css" />
     </head>
 </html>
 <body>
-    <h1>project</h1>
+    <div class="navigation">
+        <ul id="nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/register">Register</a></li>
+            <li><a href="/login">Log-In</a></li>
+            <li><a href="/logout">Log-Out</a></li>
+            <li><a href="/projects">View Projects</a></li>
+        </ul>    
+    </div>
+    <h1 id="projectname"><%= data.project %></h1><br><br>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" id="file"/><br>
+        <button type="submit">Submit</button>
+    </form><br><br>
+
+    <% if(data.files) { %>
+        <% data.files.forEach(function(file) { %>
+            <a href=/download id="filename"><%= file.filename %></a><form action ="/files/<%= file._id %>?_method=POST" method="POST"><input type="submit" value="Download file"></form><br><form action ="/files/<%= file._id %>?_method=DELETE" method="POST"><input type="submit" value="Delete file"></form><br>
+        <% }) %>    
+    <% } else { %>
+        <p>no files</p>
+    <% } %><br><br>
+
+    <form action="/adduser" method="POST">
+        <label for="user">Add User:</label><br>
+        <input type="text" id="user" name="user"><br>
+        <input type="submit" value="Submit">
+    </form>
+    
     <script src="../static/client.js"></script>
 </body>

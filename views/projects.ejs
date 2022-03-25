@@ -2,21 +2,42 @@
 <html>
     <head>
         <title>Proof of Concept</title>
+        <link href="css/style.css" rel="stylesheet" type="text/css" />
     </head>
 </html>
 <body>
+    <div class="navigation">
+        <ul id="nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/register">Register</a></li>
+            <li><a href="/login">Log-In</a></li>
+            <li><a href="/logout">Log-Out</a></li>
+            <li><a href="/projects">View Projects</a></li>9
+        </ul>    
+    </div>
+    <h2>Your Projects</h2>
     <form action="selectproject" method=POST>
-        <select name="Projects">
+        <select name="Project" id="Project">
             <% for (const i in dropdownVals) { %>
-                <option value="<%= dropdownVals[i].id %>"> <%= dropdownVals[i].name %> </option>
+                <option value="<%= dropdownVals[i]._id %>"> <%= dropdownVals[i].name %> </option>
                 <% } %>       
         </select><br>
-        <input type="submit" value="Select project"><br>
-        <input type="button" value="Delete project">
+        <input type="submit" name="select" value="Select project"><br>
+        <input type="submit" name="delete" value="Delete project">
     </form>
     <form action="newproject" method=POST>
         <input type="submit" value="New project"></input>   
-    </form><br><br><br>
+    </form><br>
+    <h2>Projects you have access to</h2>
+    <form action="selectprojectaccess" method=POST>
+        <select name="Project" id="Project">
+            <% for (const i in dropdownVals) { %>
+                <option value="<%= dropdownVals[i]._id %>"> <%= dropdownVals[i].name %> </option>
+                <% } %>       
+        </select><br>
+        <input type="submit" name="select" value="Select project"><br>
+    </form>
+    <br><br>
     <a href="/">Return Home</a>
     <script src="../static/client.js"></script>
 </body>
