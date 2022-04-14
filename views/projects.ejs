@@ -18,21 +18,21 @@
     <h2>Your Projects</h2>
     <form action="selectproject" method=POST>
         <select name="Project" id="Project">
-            <% for (const i in dropdownVals) { %>
-                <option value="<%= dropdownVals[i]._id %>"> <%= dropdownVals[i].name %> </option>
+            <% for (const i in data.dropdownVals) { %>
+                <option value="<%= data.dropdownVals[i]._id %>"> <%= data.dropdownVals[i].name %> </option>
                 <% } %>       
         </select><br>
         <input type="submit" name="select" value="Select project"><br>
-        <input type="submit" name="delete" value="Delete project">
+        <input type="submit" name="select" value="Delete project">
     </form>
     <form action="newproject" method=POST>
         <input type="submit" value="New project"></input>   
     </form><br>
     <h2>Projects you have access to</h2>
-    <form action="selectprojectaccess" method=POST>
+    <form action="selectproject" method=POST>
         <select name="Project" id="Project">
-            <% for (const i in dropdownVals) { %>
-                <option value="<%= dropdownVals[i]._id %>"> <%= dropdownVals[i].name %> </option>
+            <% for (const i in data.dropdownVals2) { %>
+                <option value="<%= data.dropdownVals2[i]._id %>"> <%= data.dropdownVals2[i].name %> </option>
                 <% } %>       
         </select><br>
         <input type="submit" name="select" value="Select project"><br>

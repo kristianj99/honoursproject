@@ -93,7 +93,7 @@ var storage = new GridFsStorage({
             bucketName: "uploads",
             metadata: {
                 author:req.user._id,
-                project:mongoose.Types.ObjectId(req.cookies.project)
+                project:req.cookies.project
 
             },
           };
@@ -121,8 +121,12 @@ app.get("/projects", isLoggedIn, function (req, res) {
         if (err) {
             console.log(err)
         }
+        Project.find({"access.user":user_id}, function (err, response2) {
+            console.log(response2);
+            res.render('projects', {data: { dropdownVals: response, dropdownVals2:response2} });
+        })
         // Pass the DB result to the template
-        res.render('projects', { dropdownVals: response })
+        
     });
 });
  
@@ -207,19 +211,41 @@ app.post('/createproject', (req, res) => {
 app.post('/adduser', (req, res) => {
     var user= req.body.user;
     var project = req.cookies.project
-    db1.users.findOne({username:user}), function (err, account) {
-        var userid = account._id
-        console.log(userid)
-        Project.updateOne(
-            {_id:project},
-            {$push: {"meta.access":userid}})
+    var role = req.body.role
+    User.findOne({"username":user}, function(err, account) {
+        console.log(account)
+        console.log(account.username)
+        Project.findOneAndUpdate({_id:project}, {$push: {access: {user: account._id, role:role}}}, {returnNewDocument: true}, function(err, result) {
+            
+        });
+        //Project.updateOne(
+            //{_id:project},
+            //{$push: {"meta.access":userid}})
         res.render('index')
-    }
+    });
     
     
     
     
 }); 
+
+app.post('/addrole', (req, res) => {
+    var role= req.body.role;
+    var project = req.cookies.project
+        Project.findOneAndUpdate({_id:project}, {$push: {role:role}}, {returnNewDocument: true}, function(err, result) {
+            console.log(result)
+        });
+        //Project.updateOne(
+            //{_id:project},
+            //{$push: {"meta.access":userid}})
+        res.render('index')
+});
+    
+    
+    
+    
+
+
 
 
 
@@ -227,32 +253,70 @@ app.post('/adduser', (req, res) => {
 
 app.post('/selectproject', (req, res) => {
     var selectedproject = req.body.Project;
+    var buttonvalue = req.body.select;
+    var user = req.user._id;
+    res.cookie('project', selectedproject);
     if(!gfs) {
         console.log("some error occured, check connection to db");
         res.send("some error occured, check connection to db");
         process.exit(0);
       }
+    if (buttonvalue == "Select project") {
+        if (req.cookies.project != selectedproject) {
+            req.cookies.project = selectedproject
+        }
+        gfs.files.find({"metadata.project":mongoose.Types.ObjectId(req.cookies.project)}).toArray((err,files) => {
+
+                db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                    if (!result) {
+                        console.log("error")
+                    } else {
+                        console.log(result)
+                    }
+                    
+                }
+                Project.findOne({_id:selectedproject}, function (err, response) {
+                    res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid}});
+                });
+                console.log(db.collection('projects').findOne({_id:selectedproject}))
+                console.log(req.cookies.project)
+            
+        });
+    } else if (buttonvalue == "Delete project") {
+        Project.remove({_id:selectedproject}, (function(err) {
+            console.log("deleted");
+            res.redirect("/");
+        }))
+    }
+    
+    
+      
+});
+
+app.post('/selectprojectaccess', (req, res) => {
+    var selectedproject = req.body.Project;
+    var user = req.user._id;
+    res.cookie('project', selectedproject);
+    if (req.cookies.project != selectedproject) {
+        req.cookies.project = selectedproject
+    }
     gfs.files.find({"metadata.project":mongoose.Types.ObjectId(req.cookies.project)}).toArray((err,files) => {
-        if (!files || files.length === 0) {
-            res.render('project', {data: {project : selectedproject, files:files}})
-        } else {
             db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
                 if (!result) {
                     console.log("error")
                 } else {
                     console.log(result)
                 }
+                Project.findOne({_id:selectedproject}, function (err, response) {
+                    res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid}});
+                });
                 
             }
             console.log(db.collection('projects').findOne({_id:selectedproject}))
             console.log(req.cookies.project)
-            res.cookie('project', selectedproject);
-            res.render('project', {data: {project : selectedproject, files:files}});
-        }
+        
     });
-    
-      
-});
+})
 
 app.get('/download', (req, res) => {
     const bucket = new mongodb.GridFSBucket(db2, {
