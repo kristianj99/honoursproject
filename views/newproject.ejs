@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Proof of Concept</title>
+        <title>Honours Project</title>
         <link href="css/style.css" rel="stylesheet" type="text/css" />
     </head>
 </html>
@@ -15,10 +15,13 @@
             <li><a href="/projects">View Projects</a></li>
         </ul>    
     </div>
+    <div class="projectcreation">
+        <form action="/createproject" method="POST">
+            <label for="projectname">Project name:</label><br>
+            <input type="text" id="projectname" name="projectname"><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
     <h1>New project</h1>
-    <form action="/createproject" method="POST">
-        <label for="projectname">Project name:</label><br>
-        <input type="text" id="projectname" name="projectname"><br>
-        <input type="submit" value="Submit">
-    </form>
+    
 </body>

@@ -6,7 +6,7 @@ var schema = new Schema({
     meta: {
         access: Array
     },
-    access: [{user:String, role:String}],
+    access: [{user:String, role:String, userid:String}],
     role: Array 
 
 });
