@@ -25,11 +25,14 @@ const util = require('util'),
 var mongodb= require('mongodb');
 const { assert } = require("console");
 var cookieParser = require('cookie-parser');
+const pdf = require('pdfjs')
 
  
     
+//connection for local hosting
+//mongoose.connect("mongodb://localhost/auth_demo_app");
+mongoose.connect("mongodb+srv://admin:admin@cluster0.1eloq.mongodb.net/honoursproject?retryWrites=true&w=majority");
 
-mongoose.connect("mongodb://localhost/auth_demo_app");
  
 var app = express();
 app.set("view engine", "ejs");
@@ -61,10 +64,14 @@ db2 = db1.useDb('projects')
 
 // init gfs
 Grid.mongo = mongoose.mongo;
-conndb1 = mongoose.createConnection('mongodb://localhost/auth_demo_app');
-let gfs;
+//localhost connection
+//conndb1 = mongoose.createConnection('mongodb://localhost/auth_demo_app');
+conndb1 = mongoose.createConnection("mongodb+srv://admin:admin@cluster0.1eloq.mongodb.net/honoursproject?retryWrites=true&w=majority");
 
-conndb2 = mongoose.createConnection('mongodb://localhost/projects')
+let gfs;
+//localhost connection
+//conndb2 = mongoose.createConnection('mongodb://localhost/projects')
+conndb2 = mongoose.createConnection("mongodb+srv://admin:admin@cluster0.1eloq.mongodb.net/honoursproject?retryWrites=true&w=majority");
 
 
 
@@ -80,7 +87,8 @@ conndb2.once('open', function () {
 
 // Create storage engine
 var storage = new GridFsStorage({
-    url: 'mongodb://localhost/projects',
+    //url: 'mongodb://localhost/projects',
+    url: 'mongodb+srv://admin:admin@cluster0.1eloq.mongodb.net/honoursproject?retryWrites=true&w=majority',
     file: (req, file) => {
       return new Promise((resolve, reject) => {
         crypto.randomBytes(16, (err, buf) => {
@@ -88,7 +96,7 @@ var storage = new GridFsStorage({
             return reject(err);
           }
           Project.findOne({_id:req.cookies.project}, function (err, project) {
-            var filename = buf.toString("hex") + path.extname(file.originalname);
+            var filename = file.originalname;
             var role = project.role;
             var fileInfo = {
               filename: filename,
@@ -295,6 +303,7 @@ app.post('/selectproject', (req, res) => {
     var selectedproject = req.body.Project;
     var buttonvalue = req.body.select;
     var user = req.user._id;
+    var loggeduserrole = loggeduserrole;
     res.cookie('project', selectedproject);
     if(!gfs) {
         console.log("some error occured, check connection to db");
@@ -316,8 +325,16 @@ app.post('/selectproject', (req, res) => {
                     
                 }
                 Project.findOne({_id:selectedproject}, function (err, response) {
-                    console.log(response.access)
-                    res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access}});
+                    for (const i in response.access) {
+                        console.log("user is " + response.access[i].user)
+                        console.log("user is " + user)
+                        if (response.access[i].user == user) {
+                            loggeduserrole = response.access[i].role
+                        };
+                    };
+                    console.log(loggeduserrole)
+                    console.log()
+                    res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
                 });
             
         });
@@ -326,34 +343,12 @@ app.post('/selectproject', (req, res) => {
             console.log("deleted");
             res.redirect("/");
         }))
+    } else if (buttonvalue == "New project") {
+        res.render("newproject");
     }
     
     
       
-});
-
-app.get('/download', (req, res) => {
-    const bucket = new mongodb.GridFSBucket(db2, {
-        chunkSizeBytes: 1024,
-        bucketName: 'uploads'
-    });
-    gfs.files.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, (err, file) => {
-        bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
-        pipe(fs.createWriteStream(file.filename)).
-        on('error', function(error) {
-            assert.ifError(error);
-        }).
-        on('end', function() {
-            console.log('worked');
-            process.exit(0);
-        });
-    });  
-    res.redirect('/');
-
-    
-    
-    
-    
 });
 
 
@@ -369,6 +364,7 @@ app.delete('/files/:id', (req, res) => {
 
 app.post('/files/:id',  (req, res) => {
     console.log(req.params.id);
+    console.log("downloading rn")
     const bucket = new mongodb.GridFSBucket(db2, {
         chunkSizeBytes: 1024,
         bucketName: 'uploads'
@@ -386,13 +382,6 @@ app.post('/files/:id',  (req, res) => {
     });      
         
     res.redirect('/');
-    //gfs.remove({_id:req.params.id, root:'uploads'}, (err, gridStore) => {
-    //    if (err) {
-    //        return res.status(404).json(err);
-    //
-    //    }
-        //res.redirect('/')
-    //});
 });
 
 app.get("/files",(req,res) => {
@@ -413,7 +402,10 @@ app.get("/files/:filename",(req,res) => {
                 err: 'No File Exist'
             });
         }
-        return res.json(file);
+        if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
+            const readstream = gfs.createReadStream(file.filename);
+            readstream.pipe(res);
+          }
     });
 });
 
@@ -443,7 +435,7 @@ function isLoggedIn(req, res, next) {
 
 app.post('/upload', upload.single('file'), (req, res, next) => {
     console.log(req.cookies.project)
-    res.render("index")
+    res.redirect("projects")
 });
   
  
