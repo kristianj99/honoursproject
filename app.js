@@ -365,7 +365,7 @@ app.delete('/files/:id', (req, res) => {
 app.post('/files/:id',  (req, res) => {
     console.log(req.params.id);
     console.log("downloading rn")
-    const bucket = new mongodb.GridFSBucket(db2, {
+    const bucket = new mongodb.GridFSBucket(db1, {
         chunkSizeBytes: 1024,
         bucketName: 'uploads'
     });
