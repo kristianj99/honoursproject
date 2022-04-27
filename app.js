@@ -236,7 +236,37 @@ app.post('/adduser', isLoggedIn, (req, res) => {
             //Project.updateOne(
                 //{_id:project},
                 //{$push: {"meta.access":userid}})
-            res.render('index')
+                var selectedproject = req.cookies.project;
+                var user = req.user._id;
+                var loggeduserrole = loggeduserrole;
+                console.log(req.cookies.project)
+                if (req.cookies.project != selectedproject) {
+                    req.cookies.project = selectedproject
+                }
+                gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+                        console.log(files)
+                        db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                            if (!result) {
+                                console.log("error")
+                            } else {
+                                console.log(result)
+                            }
+                            
+                        }
+                        Project.findOne({_id:selectedproject}, function (err, response) {
+                            for (const i in response.access) {
+                                console.log("user is " + response.access[i].user)
+                                console.log("user is " + user)
+                                if (response.access[i].user == user) {
+                                    loggeduserrole = response.access[i].role
+                                };
+                            };
+                            console.log(loggeduserrole)
+                            console.log()
+                            res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+                        });
+                    
+                });
         }
         
     });
@@ -256,7 +286,37 @@ app.post('/removeuser', isLoggedIn, (req, res) => {
             Project.findOneAndUpdate({_id:project}, {$pull: {access: {user: account.username}}}, {returnNewDocument: true}, function(err, result) {
                 console.log(result);
             });
-            res.render('index')
+            var selectedproject = req.cookies.project;
+    var user = req.user._id;
+    var loggeduserrole = loggeduserrole;
+    console.log(req.cookies.project)
+    if (req.cookies.project != selectedproject) {
+        req.cookies.project = selectedproject
+    }
+    gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+            console.log(files)
+            db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                if (!result) {
+                    console.log("error")
+                } else {
+                    console.log(result)
+                }
+                
+            }
+            Project.findOne({_id:selectedproject}, function (err, response) {
+                for (const i in response.access) {
+                    console.log("user is " + response.access[i].user)
+                    console.log("user is " + user)
+                    if (response.access[i].user == user) {
+                        loggeduserrole = response.access[i].role
+                    };
+                };
+                console.log(loggeduserrole)
+                console.log()
+                res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+            });
+        
+    });
         }
         
     });
@@ -273,7 +333,37 @@ app.post('/removerole', isLoggedIn, (req,res) => {
         //Project.updateOne(
             //{_id:project},
             //{$push: {"meta.access":userid}})
-        res.render('index')
+            var selectedproject = req.cookies.project;
+            var user = req.user._id;
+            var loggeduserrole = loggeduserrole;
+            console.log(req.cookies.project)
+            if (req.cookies.project != selectedproject) {
+                req.cookies.project = selectedproject
+            }
+            gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+                    console.log(files)
+                    db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                        if (!result) {
+                            console.log("error")
+                        } else {
+                            console.log(result)
+                        }
+                        
+                    }
+                    Project.findOne({_id:selectedproject}, function (err, response) {
+                        for (const i in response.access) {
+                            console.log("user is " + response.access[i].user)
+                            console.log("user is " + user)
+                            if (response.access[i].user == user) {
+                                loggeduserrole = response.access[i].role
+                            };
+                        };
+                        console.log(loggeduserrole)
+                        console.log()
+                        res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+                    });
+                
+            });
     }
     
 });
@@ -330,7 +420,37 @@ app.post('/addrole', isLoggedIn, (req, res) => {
         //Project.updateOne(
             //{_id:project},
             //{$push: {"meta.access":userid}})
-        res.render('index')
+            var selectedproject = req.cookies.project;
+            var user = req.user._id;
+            var loggeduserrole = loggeduserrole;
+            console.log(req.cookies.project)
+            if (req.cookies.project != selectedproject) {
+                req.cookies.project = selectedproject
+            }
+            gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+                    console.log(files)
+                    db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                        if (!result) {
+                            console.log("error")
+                        } else {
+                            console.log(result)
+                        }
+                        
+                    }
+                    Project.findOne({_id:selectedproject}, function (err, response) {
+                        for (const i in response.access) {
+                            console.log("user is " + response.access[i].user)
+                            console.log("user is " + user)
+                            if (response.access[i].user == user) {
+                                loggeduserrole = response.access[i].role
+                            };
+                        };
+                        console.log(loggeduserrole)
+                        console.log()
+                        res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+                    });
+                
+            });
     }
     
 }); 
