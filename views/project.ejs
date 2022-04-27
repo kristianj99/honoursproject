@@ -29,6 +29,7 @@
     <div class="fileuploader">
 
         <% if(data.user == data.creator) { %>
+            Only PDF's will be accepted.
             <form action="/upload" method="POST" enctype="multipart/form-data">
                 <input type="file" name="file" id="file" class="form-control"/><br>
                 <button type="submit" class="btn btn-primary">Upload file</button>
@@ -117,6 +118,11 @@
             </form>
         <% } %>
     </div>
+    <footer class="text-center text-lg-start bg-light text-muted fixed-bottom mt-auto">
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2022 Kristian Jaehn | <a href="/privacypolicy">Privacy Policy</a>
+          </div>
+    </footer>
 
     
     

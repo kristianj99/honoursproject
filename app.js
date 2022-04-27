@@ -134,7 +134,8 @@ app.get("/projects", isLoggedIn, function (req, res) {
         if (err) {
             console.log(err)
         }
-        Project.find({"access.user":user_id}, function (err, response2) {
+        Project.find({"access.userid":(user_id.toString())}, function (err, response2) {
+            console.log(user_id)
             console.log(response2);
             res.render('projects', {data: { dropdownVals: response, dropdownVals2:response2} });
         })
@@ -205,7 +206,7 @@ app.post('/logout', function(req, res){
 });
 
 
-app.post('/createproject', (req, res) => {
+app.post('/createproject', isLoggedIn, (req, res) => {
     var project= req.body.projectname;
     var user_id = req.user._id
     Project.create({
@@ -221,7 +222,7 @@ app.post('/createproject', (req, res) => {
     
 }); 
 
-app.post('/adduser', (req, res) => {
+app.post('/adduser', isLoggedIn, (req, res) => {
     var user= req.body.user;
     var project = req.cookies.project
     var role = req.body.role
@@ -245,7 +246,7 @@ app.post('/adduser', (req, res) => {
     
 });
 
-app.post('/removeuser', (req, res) => {
+app.post('/removeuser', isLoggedIn, (req, res) => {
     var user = req.body.user;
     var project = req.cookies.project;
     User.findOne({"username":user}, function(err, account) {
@@ -261,7 +262,7 @@ app.post('/removeuser', (req, res) => {
     });
 });
 
-app.post('/removerole', (req,res) => {
+app.post('/removerole', isLoggedIn, (req,res) => {
     var role = req.body.role;
     if (role == undefined) {
         res.render('removeroleerror')
@@ -277,7 +278,7 @@ app.post('/removerole', (req,res) => {
     
 });
 
-app.post('/updatepermissions/:id', (req,res) => {
+app.post('/updatepermissions/:id', isLoggedIn, (req,res) => {
     if (req.body.permission == undefined) {
         req.body.permission = [];
     }
@@ -288,7 +289,7 @@ app.post('/updatepermissions/:id', (req,res) => {
     console.log(req.body.permission)
 });
 
-app.post('/addrole', (req, res) => {
+app.post('/addrole', isLoggedIn, (req, res) => {
     var role = req.body.role;
     if ((role.length) == 0) {
         res.render('roleundefined')
@@ -315,7 +316,7 @@ app.post('/addrole', (req, res) => {
 
 
 
-app.post('/selectproject', (req, res) => {
+app.post('/selectproject', isLoggedIn, (req, res) => {
     var selectedproject = req.body.Project;
     var buttonvalue = req.body.select;
     var user = req.user._id;
@@ -344,7 +345,7 @@ app.post('/selectproject', (req, res) => {
                     for (const i in response.access) {
                         console.log("user is " + response.access[i].user)
                         console.log("user is " + user)
-                        if (response.access[i].user == user) {
+                        if (response.access[i].userid == user) {
                             loggeduserrole = response.access[i].role
                         };
                     };
@@ -369,7 +370,7 @@ app.post('/selectproject', (req, res) => {
 
 
 
-app.delete('/files/:id', (req, res) => {
+app.delete('/files/:id', isLoggedIn, (req, res) => {
     gridfsBucket = new mongoose.mongo.GridFSBucket(conndb2.db, {
         bucketName: "uploads",
       });
@@ -378,7 +379,7 @@ app.delete('/files/:id', (req, res) => {
     res.redirect("/");
 });
 
-app.post('/files/:id', async (req, res) => {
+app.post('/files/:id', isLoggedIn, async (req, res) => {
     console.log(req.params.id);
     console.log("downloading rn")
     const bucket = new mongodb.GridFSBucket(db1, {
@@ -396,15 +397,15 @@ app.post('/files/:id', async (req, res) => {
         //read_stream.pipe(res);
         //console.log((fs.createReadStream(file.filename)))
         //return res;
-        //bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
-        //pipe(fs.createWriteStream(file.filename)).
-        //on('error', function(error) {
-        //    assert.ifError(error);
-        //}).
-        //on('end', function() {
-        //    console.log('worked');
-        //    process.exit(0);
-        //});
+        bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
+        pipe(fs.createWriteStream(file.filename)).
+        on('error', function(error) {
+            assert.ifError(error);
+        }).
+        on('end', function() {
+            console.log('worked');
+            process.exit(0);
+        });
         
 
     });      
@@ -412,7 +413,7 @@ app.post('/files/:id', async (req, res) => {
     res.redirect('/');
 });
 
-app.get("/files",(req,res) => {
+app.get("/files", isLoggedIn, (req,res) => {
     gfs.files.find().toArray((err, files) => {
         if(!files || files.length === 0 ) {
             return res.status(404).json( {
@@ -423,7 +424,7 @@ app.get("/files",(req,res) => {
     });
 });
 
-app.get("/files/:filename",(req,res) => {
+app.get("/files/:filename", isLoggedIn, (req,res) => {
     gfs.files.findOne({filename: req.params.filename}, (err, file) => {
         if(!file || file.length === 0 ) {
             return res.status(404).json( {
@@ -437,7 +438,7 @@ app.get("/files/:filename",(req,res) => {
     });
 });
 
-app.post('/templates', (req,res) => {
+app.post('/templates', isLoggedIn, (req,res) => {
     res.render('templates')
 });
 
@@ -464,7 +465,7 @@ function isLoggedIn(req, res, next) {
 
 
 
-app.post('/upload', upload.single('file'), (req, res, next) => {
+app.post('/upload', upload.single('file'), isLoggedIn, (req, res, next) => {
     var selectedproject = req.cookies.project;
     var user = req.user._id;
     var loggeduserrole = loggeduserrole;
@@ -496,6 +497,11 @@ app.post('/upload', upload.single('file'), (req, res, next) => {
             });
         
     });
+});
+
+app.get("/privacypolicy", function (req, res) {
+
+    res.render("privacypolicy");
 });
   
  
