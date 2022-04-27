@@ -304,16 +304,8 @@ app.post('/addrole', isLoggedIn, (req, res) => {
         res.render('index')
     }
     
-});
+}); 
     
-    
-    
-    
-
-
-
-
-
 
 
 app.post('/selectproject', isLoggedIn, (req, res) => {
@@ -387,30 +379,22 @@ app.post('/files/:id', isLoggedIn, async (req, res) => {
         bucketName: 'uploads'
     });
     gfs.files.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, (err, file) => {
-        //var readStream = fs.createReadStream(file.filename);
-        //readStream.pipe(res);
-        //var mime = file.contentType;
-        //var filename = file.filename;
-        //res.set('Content-Type', mime);
-        //res.set('Content-Disposition', "inline; filename=" + filename);
-        //var read_stream = fs.createReadStream(file.filename);
-        //read_stream.pipe(res);
-        //console.log((fs.createReadStream(file.filename)))
-        //return res;
-        bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
-        pipe(fs.createWriteStream(file.filename)).
-        on('error', function(error) {
-            assert.ifError(error);
-        }).
-        on('end', function() {
-            console.log('worked');
-            process.exit(0);
-        });
-        
+        //bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
+        //pipe(fs.createWriteStream(file.filename)).
+        //on('error', function(error) {
+        //    assert.ifError(error);
+        //}).
+        //on('end', function() {
+        //    console.log('worked');
+        //    process.exit(0);
+        //});
+        const readStream = bucket.openDownloadStream(file._id);
+        readStream.pipe(res)
+
 
     });      
         
-    res.redirect('/');
+    //res.redirect('/');
 });
 
 app.get("/files", isLoggedIn, (req,res) => {
