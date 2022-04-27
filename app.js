@@ -226,15 +226,18 @@ app.post('/adduser', (req, res) => {
     var project = req.cookies.project
     var role = req.body.role
     User.findOne({"username":user}, function(err, account) {
-        console.log(account)
-        console.log(account.username)
-        Project.findOneAndUpdate({_id:project}, {$push: {access: {userid: account._id, user:account.username, role:role}}}, {returnNewDocument: true}, function(err, result) {
+        if (account == null) {
+            res.render('addusererror')
+        } else {
+            Project.findOneAndUpdate({_id:project}, {$push: {access: {userid: account._id, user:account.username, role:role}}}, {returnNewDocument: true}, function(err, result) {
             
-        });
-        //Project.updateOne(
-            //{_id:project},
-            //{$push: {"meta.access":userid}})
-        res.render('index')
+            });
+            //Project.updateOne(
+                //{_id:project},
+                //{$push: {"meta.access":userid}})
+            res.render('index')
+        }
+        
     });
     
     
@@ -246,24 +249,32 @@ app.post('/removeuser', (req, res) => {
     var user = req.body.user;
     var project = req.cookies.project;
     User.findOne({"username":user}, function(err, account) {
-        console.log(user);
-        console.log(account.username);
-        Project.findOneAndUpdate({_id:project}, {$pull: {access: {user: account.username}}}, {returnNewDocument: true}, function(err, result) {
-            console.log(result);
-        });
-        res.render('index')
+        if (account == null) {
+            res.render("removeusererror")
+        } else {
+            Project.findOneAndUpdate({_id:project}, {$pull: {access: {user: account.username}}}, {returnNewDocument: true}, function(err, result) {
+                console.log(result);
+            });
+            res.render('index')
+        }
+        
     });
 });
 
 app.post('/removerole', (req,res) => {
     var role = req.body.role;
-    var project = req.cookies.project;
+    if (role == undefined) {
+        res.render('removeroleerror')
+    } else {
+        var project = req.cookies.project;
         Project.findOneAndUpdate({_id:project}, {$pull: {role:role}}, {returnNewDocument: true}, function(err, result) {
         });
         //Project.updateOne(
             //{_id:project},
             //{$push: {"meta.access":userid}})
         res.render('index')
+    }
+    
 });
 
 app.post('/updatepermissions/:id', (req,res) => {
@@ -278,8 +289,11 @@ app.post('/updatepermissions/:id', (req,res) => {
 });
 
 app.post('/addrole', (req, res) => {
-    var role= req.body.role;
-    var project = req.cookies.project;
+    var role = req.body.role;
+    if ((role.length) == 0) {
+        res.render('roleundefined')
+    } else {
+        var project = req.cookies.project;
         Project.findOneAndUpdate({_id:project}, {$push: {role:role}}, {returnNewDocument: true}, function(err, result) {
             console.log(result)
         });
@@ -287,6 +301,8 @@ app.post('/addrole', (req, res) => {
             //{_id:project},
             //{$push: {"meta.access":userid}})
         res.render('index')
+    }
+    
 });
     
     
@@ -362,7 +378,7 @@ app.delete('/files/:id', (req, res) => {
     res.redirect("/");
 });
 
-app.post('/files/:id',  (req, res) => {
+app.post('/files/:id', async (req, res) => {
     console.log(req.params.id);
     console.log("downloading rn")
     const bucket = new mongodb.GridFSBucket(db1, {
@@ -370,15 +386,27 @@ app.post('/files/:id',  (req, res) => {
         bucketName: 'uploads'
     });
     gfs.files.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, (err, file) => {
-        bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
-        pipe(fs.createWriteStream(file.filename)).
-        on('error', function(error) {
-            assert.ifError(error);
-        }).
-        on('end', function() {
-            console.log('worked');
-            process.exit(0);
-        });
+        //var readStream = fs.createReadStream(file.filename);
+        //readStream.pipe(res);
+        //var mime = file.contentType;
+        //var filename = file.filename;
+        //res.set('Content-Type', mime);
+        //res.set('Content-Disposition', "inline; filename=" + filename);
+        //var read_stream = fs.createReadStream(file.filename);
+        //read_stream.pipe(res);
+        //console.log((fs.createReadStream(file.filename)))
+        //return res;
+        //bucket.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).
+        //pipe(fs.createWriteStream(file.filename)).
+        //on('error', function(error) {
+        //    assert.ifError(error);
+        //}).
+        //on('end', function() {
+        //    console.log('worked');
+        //    process.exit(0);
+        //});
+        
+
     });      
         
     res.redirect('/');
@@ -409,6 +437,9 @@ app.get("/files/:filename",(req,res) => {
     });
 });
 
+app.post('/templates', (req,res) => {
+    res.render('templates')
+});
 
 
 //Handling user logout
@@ -434,8 +465,37 @@ function isLoggedIn(req, res, next) {
 
 
 app.post('/upload', upload.single('file'), (req, res, next) => {
+    var selectedproject = req.cookies.project;
+    var user = req.user._id;
+    var loggeduserrole = loggeduserrole;
     console.log(req.cookies.project)
-    res.redirect("projects")
+    if (req.cookies.project != selectedproject) {
+        req.cookies.project = selectedproject
+    }
+    gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+            console.log(files)
+            db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                if (!result) {
+                    console.log("error")
+                } else {
+                    console.log(result)
+                }
+                
+            }
+            Project.findOne({_id:selectedproject}, function (err, response) {
+                for (const i in response.access) {
+                    console.log("user is " + response.access[i].user)
+                    console.log("user is " + user)
+                    if (response.access[i].user == user) {
+                        loggeduserrole = response.access[i].role
+                    };
+                };
+                console.log(loggeduserrole)
+                console.log()
+                res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+            });
+        
+    });
 });
   
  
