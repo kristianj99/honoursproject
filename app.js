@@ -284,9 +284,38 @@ app.post('/updatepermissions/:id', isLoggedIn, (req,res) => {
     }
     gfs.files.findOneAndUpdate({_id: mongoose.Types.ObjectId(req.params.id)}, {$set: {"metadata.roleaccess.role":req.body.permission} }, (err, file) => {
         console.log(file)
-    }); 
-    console.log(req.params.id)
-    console.log(req.body.permission)
+    });
+    var selectedproject = req.cookies.project;
+    var user = req.user._id;
+    var loggeduserrole = loggeduserrole;
+    console.log(req.cookies.project)
+    if (req.cookies.project != selectedproject) {
+        req.cookies.project = selectedproject
+    }
+    gfs.files.find({"metadata.project":selectedproject}).toArray((err,files) => {
+            console.log(files)
+            db.collection('projects').findOne({_id:selectedproject}), (err, result) => {
+                if (!result) {
+                    console.log("error")
+                } else {
+                    console.log(result)
+                }
+                
+            }
+            Project.findOne({_id:selectedproject}, function (err, response) {
+                for (const i in response.access) {
+                    console.log("user is " + response.access[i].user)
+                    console.log("user is " + user)
+                    if (response.access[i].user == user) {
+                        loggeduserrole = response.access[i].role
+                    };
+                };
+                console.log(loggeduserrole)
+                console.log()
+                res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+            });
+        
+    });
 });
 
 app.post('/addrole', isLoggedIn, (req, res) => {
@@ -334,16 +363,21 @@ app.post('/selectproject', isLoggedIn, (req, res) => {
                     
                 }
                 Project.findOne({_id:selectedproject}, function (err, response) {
-                    for (const i in response.access) {
-                        console.log("user is " + response.access[i].user)
-                        console.log("user is " + user)
-                        if (response.access[i].userid == user) {
-                            loggeduserrole = response.access[i].role
+                    if (response == null) {
+                        res.render('selectprojecterror')
+                    } else {
+                        for (const i in response.access) {
+                            console.log("user is " + response.access[i].user)
+                            console.log("user is " + user)
+                            if (response.access[i].userid == user) {
+                                loggeduserrole = response.access[i].role
+                            };
                         };
-                    };
-                    console.log(loggeduserrole)
-                    console.log()
-                    res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+                        console.log(loggeduserrole)
+                        console.log()
+                        res.render('project', {data: {project : selectedproject, files:files, roles:response.role, name:response.name, user:user.toString(), creator:response.userid, users:response.access, loggeduserrole:loggeduserrole}});
+                    }
+                    
                 });
             
         });
@@ -423,7 +457,10 @@ app.get("/files/:filename", isLoggedIn, (req,res) => {
 });
 
 app.post('/templates', isLoggedIn, (req,res) => {
-    res.render('templates')
+    gfs.files.find({"metadata.project":"template"}).toArray((err,files) => {
+        console.log(files)
+        res.render('templates', {data: {files : files}})
+    });    
 });
 
 

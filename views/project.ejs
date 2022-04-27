@@ -49,7 +49,7 @@
                             <div class="col border bg-light">
                                 <!--includes works but finds one word in whole sentence eg director in assistant director-->
                                 <% if ((data.user == data.creator) || ((file.metadata.roleaccess.role).includes(data.loggeduserrole))) { %>
-                                    <a href="/files/<%= file.filename %>" id="filename"><%= file.filename %></a><form action ="/files/<%= file._id %>?_method=POST" method="POST"><input type="submit" value="Download file" class="btn btn-primary"></form><br>
+                                    <!--<a href="/files/<%= file.filename %>" id="filename">--><%= file.filename %><!--</a>--><form action ="/files/<%= file._id %>?_method=POST" method="POST"><input type="submit" value="View file" class="btn btn-primary"></form><br>
                                     <% if(data.user == data.creator) { %>
                                         <form action ="/files/<%= file._id %>?_method=DELETE" method="POST"><input type="submit" value="Delete file" class="btn btn-primary"></form><br>
                                         <form action="/updatepermissions/<%= file._id %>" method="POST">
@@ -118,11 +118,11 @@
             </form>
         <% } %>
     </div>
-    <footer class="text-center text-lg-start bg-light text-muted fixed-bottom mt-auto">
+    <!-- <footer class="text-center text-lg-start bg-light text-muted fixed-bottom mt-auto">
         <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
             © 2022 Kristian Jaehn | <a href="/privacypolicy">Privacy Policy</a>
           </div>
-    </footer>
+    </footer> -->
 
     
     

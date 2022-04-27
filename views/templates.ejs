@@ -23,9 +23,17 @@
         </ul>   
     </div>
     <div class="content">
-        <h1>Templates</h1>
+        <h1>Templates</h1><br>
+        Below are some templates of files you might need to get started!<br>
     </div>
-
+    <% if(data.files) { %>
+        <% data.files.forEach(function(file) { %>
+            <div class="col border bg-light">
+                <!--includes works but finds one word in whole sentence eg director in assistant director-->
+                    <!--<a href="/files/<%= file.filename %>" id="filename">--><%= file.filename %><!--</a>--><form action ="/files/<%= file._id %>?_method=POST" method="POST"><input type="submit" value="View file" class="btn btn-primary"></form><br>
+            </div>                    
+        <% }) %>    
+    <% } %>
     <footer class="text-center text-lg-start bg-light text-muted fixed-bottom">
         <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
             © 2022 Kristian Jaehn | <a href="/privacypolicy">Privacy Policy</a>

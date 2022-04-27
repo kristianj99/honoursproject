@@ -54,3 +54,8 @@ grid-row-end: 3;
 .templates {
 text-align: right;
 }
+
+body {
+	/* Margin bottom by footer height */
+	margin-bottom: 60px;
+  }
