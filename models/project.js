@@ -1,5 +1,8 @@
+//mongoose required for schema
 var mongoose=require("mongoose");
+//create new mongoose schema
 var { Schema } = mongoose;
+//create schema with project name, creators user id, metadata for roles and access
 var schema = new Schema({
     name: String,
     userid: String,
@@ -11,5 +14,5 @@ var schema = new Schema({
 
 });
 
-
+//export the model
 module.exports=mongoose.model("Project", schema);

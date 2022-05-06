@@ -1,3 +1,4 @@
+/* font for site */
 *{
 	margin: 0;
 	padding: 0;
@@ -5,6 +6,7 @@
 	text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
 }
+/* navbar */
 ul {
     padding: 0;
     list-style: none;
